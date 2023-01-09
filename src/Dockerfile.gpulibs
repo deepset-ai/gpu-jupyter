@@ -12,7 +12,7 @@ RUN apt-get update && \
 RUN cd /usr/lib/x86_64-linux-gnu && ln -s libnvinfer_plugin.so.8 libnvinfer_plugin.so.7 && ln -s libnvinfer.so.8 libnvinfer.so.7
 USER ${NB_UID}
 RUN pip install --upgrade pip && \
-    pip install --no-cache-dir tensorflow==2.15.0 keras==2.15.0 && \
+    # pip install --no-cache-dir tensorflow==2.15.0 keras==2.15.0 && \
     fix-permissions "${CONDA_DIR}" && \
     fix-permissions "/home/${NB_USER}"
 
@@ -30,13 +30,14 @@ RUN mamba install --quiet --yes \
 #     torchviz==0.0.2 --extra-index-url https://download.pytorch.org/whl/cu118
 RUN set -ex \
  && buildDeps=' \
-    torch==2.1.2 \
-    torchvision==0.16.2 \
-    torchaudio==2.1.2 \
+    torch \
+    torchvision \
+    torchaudio \
 ' \
  && pip install --no-cache-dir $buildDeps \
  && fix-permissions "${CONDA_DIR}" \
  && fix-permissions "/home/${NB_USER}"
+
 
 USER root
 ENV CUDA_PATH=/opt/conda/

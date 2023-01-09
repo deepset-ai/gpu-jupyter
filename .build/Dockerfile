@@ -6,6 +6,7 @@
 
 
 # Use NVIDIA CUDA as base image and run the same installation as in the other packages.
+
 # The version of cuda must match those of the packages installed in src/Dockerfile.gpulibs
 FROM nvidia/cuda:12.0.1-cudnn8-runtime-ubuntu22.04
 LABEL authors="Christoph Schranz <christoph.schranz@salzburgresearch.at>, Mathematical Michael <consistentbayes@gmail.com>"
@@ -389,7 +390,7 @@ RUN apt-get update && \
 RUN cd /usr/lib/x86_64-linux-gnu && ln -s libnvinfer_plugin.so.8 libnvinfer_plugin.so.7 && ln -s libnvinfer.so.8 libnvinfer.so.7
 USER ${NB_UID}
 RUN pip install --upgrade pip && \
-    pip install --no-cache-dir tensorflow==2.15.0 keras==2.15.0 && \
+    # pip install --no-cache-dir tensorflow==2.15.0 keras==2.15.0 && \
     fix-permissions "${CONDA_DIR}" && \
     fix-permissions "/home/${NB_USER}"
 
@@ -407,9 +408,9 @@ RUN mamba install --quiet --yes \
 #     torchviz==0.0.2 --extra-index-url https://download.pytorch.org/whl/cu118
 RUN set -ex \
  && buildDeps=' \
-    torch==2.1.2 \
-    torchvision==0.16.2 \
-    torchaudio==2.1.2 \
+    torch \
+    torchvision \
+    torchaudio \
 ' \
  && pip install --no-cache-dir $buildDeps \
  && fix-permissions "${CONDA_DIR}" \
@@ -435,55 +436,6 @@ RUN ln -s $CONDA_DIR/bin/ptxas /usr/bin/ptxas
 
 USER $NB_UID
 
-  ############################################################################
-  ############################ Useful packages ###############################
-  ############################################################################
-  
-LABEL authors="Christoph Schranz <christoph.schranz@salzburgresearch.at>, Mathematical Michael <consistentbayes@gmail.com>"
+# Copy jupyter_notebook_config.json
+COPY jupyter_notebook_config.json /etc/jupyter/
 
-USER root
-
-# Install useful packages and Graphviz
-RUN apt-get update \
- && apt-get -y install --no-install-recommends htop apt-utils iputils-ping graphviz libgraphviz-dev openssh-client \
- && apt-get clean && rm -rf /var/lib/apt/lists/*
-
-USER $NB_UID
-RUN set -ex \
- && buildDeps=' \
-    graphviz==0.19.1 \
-    pytest==7.2.2 \
-' \
- && pip install --no-cache-dir $buildDeps \
- && fix-permissions "${CONDA_DIR}" \
- && fix-permissions "/home/${NB_USER}"
-
-# upgrade jupyter-server for compatibility
-RUN pip install --no-cache-dir --upgrade \
-    distributed==2023.3.0 \
-    jupyter-server==2.4 \
-    # fix permissions of conda
- && fix-permissions "${CONDA_DIR}" \
- && fix-permissions "/home/${NB_USER}"
-
-RUN pip install --no-cache-dir \
-    # install extension manager
-    jupyter_contrib_nbextensions==0.7.0 \
-    jupyter_nbextensions_configurator==0.6.1 \
-    # install git extension
-    jupyterlab-git==0.41.0 \
-    # install plotly extension
-    plotly==5.13.1 \
-    # install drawio and graphical extensions
-    jupyterlab-drawio==0.9.0 \
-    rise==5.7.1 \
-    ipyleaflet==0.17.2 \
-    ipywidgets==8.0.4 \
-    # install spell checker
-    jupyterlab-spellchecker==0.7.3 && \
-    # fix permissions of conda
-    fix-permissions "${CONDA_DIR}" && \
-    fix-permissions "/home/${NB_USER}"
-
-# Switch back to jovyan to avoid accidental container runs as root
-USER $NB_UID

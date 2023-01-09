@@ -1,28 +1,50 @@
-# This is a basic workflow to help you get started with Actions
+name: Docker Build
 
-name: Docker Build (default)
-
-# Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the master branch
 on:
   push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master, docker-swarm ]
+    branches:
+      - v1.4_cuda-11.7_ubuntu-22.04
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+env:
+  IMAGE: deepset/gpu-jupyter
+  TAG: v1.4_cuda-11.7_ubuntu-22.04_slim
+  DOCKER_HUB_PUSH_USER: ${{ secrets.DC_DOCKER_HUB_PUSH_USER }}
+  DOCKER_HUB_PUSH_TOKEN: ${{ secrets.DC_DOCKER_HUB_PUSH_TOKEN }}
+
 jobs:
-  docker-default:
+  build:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b
 
-    - name: Generate Dockerfile
-      run: ./generate-Dockerfile.sh
+      - name: Generate Dockerfile
+        run: ./generate-Dockerfile.sh --slim
 
-    - name: Build Image
-      run: docker build -t gpu-jupyter .build/  # will take a while
+      - name: Login to DockerHub
+        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
+        with:
+          username: ${{ env.DOCKER_HUB_PUSH_USER }}
+          password: ${{ env.DOCKER_HUB_PUSH_TOKEN }}
 
-    - name: Quickstart Entrypoint Script
-      run: docker run -d -it -p 8848:8888 -v $(pwd)/data:/home/jovyan/work -e GRANT_SUDO=yes -e JUPYTER_ENABLE_LAB=yes -e NB_UID="$(id -u)" -e NB_GID="$(id -g)" --user root --restart always --name gpu-jupyter_1 gpu-jupyter
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@8c0edbc76e98fa90f69d9a2c020dcb50019dc325
+
+      - name: Docker metadata
+        id: metadata
+        uses: docker/metadata-action@69f6fc9d46f2f8bf0d5491e4aabe0bb8c6a4678a
+        with:
+          images: ${{ env.IMAGE }}
+          tags: |
+            type=raw,value=${{ env.TAG }}
+
+      - name: Build and push container image
+        uses: docker/build-push-action@c84f38281176d4c9cdb1626ffafcd6b3911b5d94
+        with:
+          context: build
+          builder: ${{ steps.buildx.outputs.name }}
+          tags: ${{ steps.metadata.outputs.tags }}
+          push: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
