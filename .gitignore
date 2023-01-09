@@ -111,6 +111,8 @@ venv.bak/
 *.envsubst
 *.tar
 *.tar.gz
+.build/*
+!.build/.gitkeep
 
 # Added config to hide hash of changed password
 src/jupyter_notebook_config.json
