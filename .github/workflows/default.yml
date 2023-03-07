@@ -7,7 +7,7 @@ on:
 
 env:
   IMAGE: deepset/gpu-jupyter
-  TAG: v1.4_cuda-11.7_ubuntu-22.04_slim
+  TAG: v1.4_cuda-11.7_ubuntu-22.04_slim_v2
   DOCKER_HUB_PUSH_USER: ${{ secrets.DC_DOCKER_HUB_PUSH_USER }}
   DOCKER_HUB_PUSH_TOKEN: ${{ secrets.DC_DOCKER_HUB_PUSH_TOKEN }}
 
