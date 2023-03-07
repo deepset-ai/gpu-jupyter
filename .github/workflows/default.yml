@@ -39,6 +39,7 @@ jobs:
           images: ${{ env.IMAGE }}
           tags: |
             type=raw,value=${{ env.BASE_TAG }}-${{ env.SHA }}
+            type=raw,value=${{ env.BASE_TAG }}-latest
 
       - name: Build and push container image
         uses: docker/build-push-action@c84f38281176d4c9cdb1626ffafcd6b3911b5d94
