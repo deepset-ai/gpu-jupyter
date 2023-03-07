@@ -7,7 +7,8 @@ on:
 
 env:
   IMAGE: deepset/gpu-jupyter
-  TAG: v1.4_cuda-11.7_ubuntu-22.04_slim_v2
+  BASE_TAG: v1.4_cuda-11.7_ubuntu-22.04_slim
+  SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
   DOCKER_HUB_PUSH_USER: ${{ secrets.DC_DOCKER_HUB_PUSH_USER }}
   DOCKER_HUB_PUSH_TOKEN: ${{ secrets.DC_DOCKER_HUB_PUSH_TOKEN }}
 
@@ -37,7 +38,7 @@ jobs:
         with:
           images: ${{ env.IMAGE }}
           tags: |
-            type=raw,value=${{ env.TAG }}
+            type=raw,value=${{ env.BASE_TAG }}-${{ env.SHA }}
 
       - name: Build and push container image
         uses: docker/build-push-action@c84f38281176d4c9cdb1626ffafcd6b3911b5d94
