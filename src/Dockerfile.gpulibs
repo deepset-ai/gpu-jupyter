@@ -5,7 +5,7 @@ LABEL maintainer="Christoph Schranz <christoph.schranz@salzburgresearch.at>, Mat
 # installation via conda leads to errors in version 4.8.2
 USER ${NB_UID}
 RUN pip install --upgrade pip && \
-    pip install --no-cache-dir tensorflow==2.10.1 keras==2.10 jupyter_contrib_nbextensions==0.7.0 jupyter_nbextensions_configurator==0.6.1 && \
+    pip install --no-cache-dir tensorflow==2.10.1 keras==2.10 && \
     fix-permissions "${CONDA_DIR}" && \
     fix-permissions "/home/${NB_USER}"
 
